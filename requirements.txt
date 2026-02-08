@@ -1,10 +1,12 @@
 flask
 flask-cors
 gunicorn
+
 numpy
-opencv-python
+opencv-python-headless
 pillow
 pymupdf
+
 torch
 torchvision
 ultralytics
