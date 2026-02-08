@@ -1,0 +1,18 @@
+{
+    "annotated_images": [
+        "/output/page_1_detected.png",
+        "/output/page_2_detected.png"
+    ],
+    "image_count": 2,
+    "model_used": "best_v8.pt",
+    "success": true,
+    "symbols": {
+        "45 RADIUS ELBOW": 19,
+        "90 RADIUS ELBOW": 55,
+        "RETURN OR EXHAUST DIFFUSER": 3,
+        "RETURN-EXHAUST OR OUTSIDE AIR RISE": 1,
+        "SUPPLY AIR RISE": 67,
+        "door": 81
+    },
+    "total_symbols": 226
+}
