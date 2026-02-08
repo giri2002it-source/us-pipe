@@ -1,4 +1,9 @@
 import os
+
+# ------------------ FORCE SAFE RENDER SETTINGS ------------------
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
+os.environ["YOLO_CONFIG_DIR"] = "/tmp/Ultralytics"
+
 import cv2
 import numpy as np
 import torch
@@ -8,15 +13,27 @@ import pymupdf as fitz
 from PIL import Image
 
 
+# ------------------ LOAD MODEL ONCE ------------------
+_MODEL = None
+
+def get_model(model_path):
+    global _MODEL
+    if _MODEL is None:
+        print("🔄 Loading YOLO model once...")
+        _MODEL = YOLO(model_path)
+        print("✅ YOLO model loaded")
+    return _MODEL
+
+
 # ------------------ COLOR PER CLASS ------------------
 def get_color_for_class(cls_id):
     COLORS = [
-        (255, 0, 0),    # Red
-        (0, 255, 0),    # Green
-        (0, 0, 255),    # Blue
-        (255, 255, 0),  # Cyan
-        (255, 0, 255),  # Magenta
-        (0, 255, 255),  # Yellow
+        (255, 0, 0),
+        (0, 255, 0),
+        (0, 0, 255),
+        (255, 255, 0),
+        (255, 0, 255),
+        (0, 255, 255),
     ]
     return COLORS[cls_id % len(COLORS)]
 
@@ -92,7 +109,7 @@ def save_per_class_visualizations(img_np, page_boxes, class_names, output_dir, p
     page_dir = os.path.join(output_dir, f"page_{page_num}")
     os.makedirs(page_dir, exist_ok=True)
 
-    saved_images = []
+    saved_images = {}
     boxes_by_class = {}
 
     for box in page_boxes:
@@ -107,19 +124,10 @@ def save_per_class_visualizations(img_np, page_boxes, class_names, output_dir, p
         for x1, y1, x2, y2, conf, _ in boxes:
             x1, y1, x2, y2 = map(int, (x1, y1, x2, y2))
             cv2.rectangle(vis_img, (x1, y1), (x2, y2), color, 2)
-            cv2.putText(
-                vis_img,
-                f"{cls_name} {conf:.2f}",
-                (x1, max(y1 - 10, 10)),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.6,
-                color,
-                2
-            )
 
         out_path = os.path.join(page_dir, f"{cls_name}.png")
         cv2.imwrite(out_path, vis_img)
-        saved_images.append(out_path)
+        saved_images.setdefault(cls_name, []).append(out_path)
 
     return saved_images
 
@@ -129,9 +137,9 @@ def process_pdf_for_symbols(
     pdf_path,
     model_path,
     output_dir="output",
-    dpi=200
+    dpi=150   # ⬅️ lower DPI = safer memory
 ):
-    model = YOLO(model_path)
+    model = get_model(model_path)
     doc = fitz.open(pdf_path)
     os.makedirs(output_dir, exist_ok=True)
 
@@ -144,8 +152,6 @@ def process_pdf_for_symbols(
         pix = page.get_pixmap(matrix=fitz.Matrix(zoom, zoom), alpha=False)
 
         img_np = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.h, pix.w, pix.n)
-        if pix.n == 4:
-            img_np = cv2.cvtColor(img_np, cv2.COLOR_RGBA2RGB)
         img_np = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
 
         page_counts, page_boxes = detect_symbols_in_image(model, img_np)
@@ -161,8 +167,8 @@ def process_pdf_for_symbols(
                 output_dir,
                 page_idx + 1
             )
-            all_output_images.extend(images)
+            for img_list in images.values():
+                all_output_images.extend(img_list)
 
     doc.close()
-
     return total_counts, all_output_images, os.path.basename(model_path), model.names

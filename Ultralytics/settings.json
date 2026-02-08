@@ -1,0 +1,21 @@
+{
+  "settings_version": "0.0.6",
+  "datasets_dir": "C:\\Users\\Admin\\PycharmProjects\\datasets",
+  "weights_dir": "C:\\Users\\Admin\\PycharmProjects\\PythonProject\\weights",
+  "runs_dir": "C:\\Users\\Admin\\PycharmProjects\\PythonProject\\runs",
+  "uuid": "ac06086269e9fb794b58c150c6ca5843b38214e1fbbd1c6c1791750e5ee597e9",
+  "sync": true,
+  "api_key": "",
+  "openai_api_key": "",
+  "clearml": true,
+  "comet": true,
+  "dvc": true,
+  "hub": true,
+  "mlflow": true,
+  "neptune": true,
+  "raytune": true,
+  "tensorboard": false,
+  "wandb": false,
+  "vscode_msg": true,
+  "openvino_msg": true
+}
