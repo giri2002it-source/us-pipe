@@ -1,0 +1,10 @@
+flask
+flask-cors
+gunicorn
+numpy
+opencv-python
+pillow
+pymupdf
+torch
+torchvision
+ultralytics
